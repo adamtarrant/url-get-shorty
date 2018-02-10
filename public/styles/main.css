@@ -1,0 +1,36 @@
+body {
+    background-color: #dddddd;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    height: 100%;
+}
+
+p {
+    font-size: 1.2em;
+}
+
+h1 {
+    font-size: 2em;
+    color: rgb(99, 99, 102);
+}
+
+ul {
+    display: inline;
+}
+
+li {
+    width: fit-content;
+    color: #f5f5f5;
+    background-color: #546db6;
+    list-style: none;
+    font-style: normal;
+    margin: 5px;
+    padding: 0 5px 0 5px;
+    border-radius: 5px;
+}
+
+footer {
+    color: black;
+    position: fixed;
+    bottom: 0;
+    margin: 20px;
+}

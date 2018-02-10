@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <title> Home | URL Shortener</title>
+      <link rel="stylesheet" type="text/css" href="/styles/main.css" />
+      <meta name="microservice API" content="" />
+      <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1" />
+    </head>
+    <body>
+      <!--[if lt IE 9]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <![endif]-->
+
+      <main> 
+        <h1> URL Shortener </h1>
+        <p>Please use this API by submitting /create/:urltoshorten. To use shortened url simply append onto end of this url.</p>
+        <h2>
+            Create shortened URL - Example input
+        </h2>      
+            <ul>
+                <li>http://localhost:8080/create/www.google.com</li>
+            </ul>
+
+        <h2>
+          Create shortened URL - Example output
+        </h2>
+        <ul>
+          <li>{original_url: "www.google.com","short_url": 1}</li>
+        </ul>
+        <h2>
+        Use shortened URL - Example input
+        </h2>      
+            <ul>
+                <li>http://localhost:8080/1</li>
+            </ul>
+
+        <h2>
+        Use shortened URL - Example output
+        </h2>      
+            <p>This will then redirect to www.google.com</p>
+
+
+        
+        
+        </main>
+      <footer> Developed by Adam Tarrant &copy2018 </footer>
+    </body>
+  </html>
