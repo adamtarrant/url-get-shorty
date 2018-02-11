@@ -9,7 +9,7 @@ const port = process.env.PORT || 8080;
 
 const app = express();
 
-const baseUrl = "http://" + hostName + ":" + port + "/"
+const baseUrl = "http://" + hostName + "/"
 
 app.use(express.static(path.join(__dirname, 'public')));
 
