@@ -3,12 +3,13 @@ const mongo = require('mongodb').MongoClient;
 const checkUrl = require('./checkUrl.js');
 const path = require('path');
 const mongoUri = 'mongodb://heroku_dlwx7mjs:a6m5de2deknbd9u112efp9vuf1@ds127888.mlab.com:27888/heroku_dlwx7mjs';
-var ip = process.env.IP;
+const ip = process.env.IP;
+const hostName = 'url-get-shorty.herokuapp.com';
 const port = process.env.PORT || 8080;
 
 const app = express();
 
-const baseUrl = "http://" + ip + ":" + port + "/"
+const baseUrl = "http://" + ip || hostName + ":" + port + "/"
 
 app.use(express.static(path.join(__dirname, 'public')));
 
