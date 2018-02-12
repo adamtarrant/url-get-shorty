@@ -4,39 +4,24 @@ const mongo = require('mongodb').MongoClient;
 const path = require('path');
 
 //Custom modules
-const checkUrl = require('./checkUrl.js');
+const checkUrl = require('./js_modules/checkUrl.js');
+const connectToDb = require('./js_modules/connectToDb.js');
+const findOneInDb = require('./js_modules/findOneInDb.js');
+const redirectUser = require('./js_modules/redirectUser.js');
 
 //Config
 const config = require('./config/config_dev.js');
 
 const app = express();
 
+//route handlers
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/:shurl', (req, res) => {
-    mongo.connect(config.mongoUri, function (err, db) {
-        console.log(req.params.shurl);
-        if (err) throw err;
-        let dbo = db.db(config.dbName);
-
-        dbo.collection('urls').findOne({ short_url: +req.params.shurl }, function(err, doc) {
-            if (err) throw err;
-            console.log(doc);
-            if (doc) {
-                res.redirect(301, 'https://' + doc.original_url);
-            }
-            else {
-                res.writeHead(400, { "Content-Type": "text/plain" });
-                res.end("This shortened url does not exist. Please use /create/<url> call to create a shortened url");
-            }
-            db.close();
-        });
-    });
-});
+app.get('/:shurl', checkShurlAndRedirCallB);
 
 app.get('/create/:url', (req, res) => {
- 
- 
+
+
     try {
 
         if (checkUrl(req.params.url)) { // check if valid url
@@ -46,7 +31,7 @@ app.get('/create/:url', (req, res) => {
                 let dbo = db.db(config.dbName);
                 //find and return to var url in collection if it exists
                 let docExist;
-                dbo.collection('urls').findOne({
+                dbo.collection('urls').findOne({ //use find one module already written. dbAfterAction is like next() convention. Each one has it and it can pass it on to the next if it exists
                     original_url: req.params.url
                 }, function(err, result) {
                     if (err) throw err;
@@ -55,13 +40,13 @@ app.get('/create/:url', (req, res) => {
                     //check if url exists in collection
                     if (docExist == null) {
                         console.log('made it to if statement');
-                        
+
                         dbo.collection('urls').find().sort({
                             'short_url': -1
                         }).limit(1).forEach(doc => {
                             //create newdoc ready for insertion
                             console.log('forEach sort = ' + doc);
-                           let newDoc = {
+                            let newDoc = {
                                 "original_url": req.params.url,
                                 "short_url": doc.short_url + 1
                             };
@@ -131,3 +116,32 @@ app.all('/*', (req, res) => {
 });
 
 app.listen(config.port);
+
+
+//Function declarations
+
+//Validate and redirect for short url - handler
+function checkShurlAndRedirCallB(req, res) {
+
+    try {
+        let dbOpsArgs = {
+            "query": +req.params.shurl,
+            "mongoUri": config.mongoUri,
+            "dbName": config.dbName
+        };
+        //Connect to db, perform findOne, after action is to redirect user or display url not valid message
+        connectToDb(dbOpsArgs, findOneInDb, (err,doc) => {
+            if (err) throw err; 
+            redirectUser(err, doc, res);
+        });
+        
+    }
+    catch (error) {
+        console.log(error);
+        res.writeHead(500, {
+            "Content-Type": "text/plain"
+        });
+        res.end("There was an error on the server");
+    }
+}
+
