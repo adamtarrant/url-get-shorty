@@ -35,14 +35,15 @@ app.get('/:shurl', (req, res) => {
 });
 
 app.get('/create/:url', (req, res) => {
-
+ 
+ 
     try {
 
         if (checkUrl(req.params.url)) { // check if valid url
 
             mongo.connect(config.mongoUri, (err, db) => { //connect to mongo
                 if (err) throw err;
-                let dbo = db.db('heroku_dlwx7mjs');
+                let dbo = db.db(config.dbName);
                 //find and return to var url in collection if it exists
                 let docExist;
                 dbo.collection('urls').findOne({
@@ -50,18 +51,17 @@ app.get('/create/:url', (req, res) => {
                 }, function(err, result) {
                     if (err) throw err;
                     docExist = result;
-                    console.log('findOne = ' + docExist);
+                    console.log('findOne =' + docExist);
                     //check if url exists in collection
                     if (docExist == null) {
                         console.log('made it to if statement');
-                        var newDoc;
-
+                        
                         dbo.collection('urls').find().sort({
                             'short_url': -1
                         }).limit(1).forEach(doc => {
                             //create newdoc ready for insertion
                             console.log('forEach sort = ' + doc);
-                            newDoc = {
+                           let newDoc = {
                                 "original_url": req.params.url,
                                 "short_url": doc.short_url + 1
                             };
