@@ -3,7 +3,7 @@ module.exports = function insertNewUrlDoc(db, dbOpsArgs, maxIdDoc, original_url,
     let dbo = db.db(dbOpsArgs.dbName);
     let newDoc = {
         "original_url": original_url,
-        "short_url": maxIdDoc.short_url + 1
+        "short_url": +maxIdDoc.short_url + 1
     };
     console.log('entered insert new doc 2');
     dbo.collection('urls').insertOne(newDoc, (err, result) => {
