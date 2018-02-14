@@ -1,6 +1,6 @@
 module.exports = {
-    "mongoUri": "mongodb://heroku_dlwx7mjs:a6m5de2deknbd9u112efp9vuf1@ds127888.mlab.com:27888/heroku_dlwx7mjs",
-    "dbName": "heroku_dlwx7mjs",
+    "mongoUri": "mongodb://heroku_k373dz4n:dte5pJVLAVUUZ9OKbbYLmfLNkC2Riq8Z@ds235768.mlab.com:35768/heroku_k373dz4n",
+    "dbName": "heroku_k373dz4n",
     "baseUrl": "http://url-get-shorty.herokuapp.com/",
     "port": process.env.PORT,
 }
