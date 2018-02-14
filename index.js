@@ -15,7 +15,7 @@ const returnInsertedJson = require('./js_modules/returnInsertedJson.js');
 const returnExistingDocJson = require('./js_modules/returnExistingDocJson.js')
 
 //Config
-const config = require('./config/config_dev.js');
+const config = require('./config/config_prod.js');
 
 const app = express();
 
