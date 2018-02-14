@@ -2,8 +2,10 @@
 
 const mongo = require('mongodb').MongoClient;
 
-module.exports = function(dbOpsArgs,dataBaseOperation, dbAfterActions) {
+module.exports = function(dbOpsArgs,dataBaseOperation, dbNextAction) {
+    console.log('entered connect to db');
         mongo.connect(dbOpsArgs.mongoUri, (err, db) => {
-            dataBaseOperation(err, db, dbOpsArgs, result => db.close(), dbAfterActions); 
+            let dbo = db.db(dbOpsArgs.dbName);
+            dataBaseOperation(err, db, dbOpsArgs, dbNextAction); 
         });
     }
