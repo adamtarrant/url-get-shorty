@@ -1,108 +1,71 @@
+//NPM and Node-core modules
 const express = require('express');
 const mongo = require('mongodb').MongoClient;
-const checkUrl = require('./checkUrl.js');
 const path = require('path');
-const mongoUri = process.env.MONGODB_URI;
-const ip = process.env.IP;
-const hostName = 'url-get-shorty.herokuapp.com';
-const port = process.env.PORT || 8080;
+
+//Custom modules
+const checkUrl = require('./js_modules/checkUrl.js');
+const connectToDb = require('./js_modules/connectToDb.js');
+const findOneInDb = require('./js_modules/findOneInDb.js');
+const redirectUser = require('./js_modules/redirectUser.js');
+const checkUrlExists = require('./js_modules/checkUrlExists.js');
+const findMaxId = require('./js_modules/findMaxId.js');
+const insertNewUrlDoc = require('./js_modules/insertNewUrlDoc.js');
+const returnInsertedJson = require('./js_modules/returnInsertedJson.js');
+const returnExistingDocJson = require('./js_modules/returnExistingDocJson.js')
+
+//Config
+const config = require('./config/config_prod.js');
 
 const app = express();
 
-const baseUrl = "http://" + hostName + "/"
-
+//route handlers
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/:shurl', (req, res) => {
-    mongo.connect(mongoUri, function(err, db) {
-        console.log(req.params.shurl);
-        if (err) throw err;
-        let dbo = db.db('heroku_dlwx7mjs');
+app.get('/:shurl', function checkShurlAndRedirCallB(req, res) {
 
-        dbo.collection('urls').findOne({ short_url: +req.params.shurl }, function(err, doc) {
-            if (err) throw err;
-            console.log(doc);
-            if (doc) {
-                res.redirect(301, 'https://' + doc.original_url);
-            }
-            else {
-                res.writeHead(400, { "Content-Type": "text/plain" });
-                res.end("This shortened url does not exist. Please use /create/<url> call to create a shortened url");
-            }
-            db.close();
+    try {
+        let dbOpsArgs = {
+            "query": +req.params.shurl,
+            "mongoUri": config.mongoUri,
+            "dbName": config.dbName
+        };
+        //Connect to db, perform findOne, after action is to redirect user or display url not valid message
+        connectToDb(dbOpsArgs, findOneInDb, (err, doc) => {
+            redirectUser(err, doc, res);
         });
-    });
+
+    }
+    catch (error) {
+        console.log(error);
+        res.writeHead(500, {
+            "Content-Type": "text/plain"
+        });
+        res.end("There was an error on the server");
+    }
 });
 
-app.get('/create/:url', (req, res) => {
-
+app.get('/create/:url', function checkAndCreateShurl(req, res) {
     try {
 
         if (checkUrl(req.params.url)) { // check if valid url
-
-            mongo.connect(mongoUri, (err, db) => { //connect to mongo
-                if (err) throw err;
-                let dbo = db.db('heroku_dlwx7mjs');
-                //find and return to var url in collection if it exists
-                let docExist;
-                dbo.collection('urls').findOne({
-                    original_url: req.params.url
-                }, function(err, result) {
-                    if (err) throw err;
-                    docExist = result;
-                    console.log('findOne = ' + docExist);
-                    //check if url exists in collection
-                    if (docExist == null) {
-                        console.log('made it to if statement');
-                        var newDoc;
-
-                        dbo.collection('urls').find().sort({
-                            'short_url': -1
-                        }).limit(1).forEach(doc => {
-                            //create newdoc ready for insertion
-                            console.log('forEach sort = ' + doc);
-                            newDoc = {
-                                "original_url": req.params.url,
-                                "short_url": doc.short_url + 1
-                            };
-
-
-
-                            dbo.collection('urls').insertOne(newDoc, (err, result) => { // instert new url
-                                if (err) throw err;
-                                //console.log(result);
-                                //console.log(newId);
-                                let resJSON = {
-                                    original_url: req.params.url,
-                                    short_url: baseUrl + newDoc.short_url
-                                };
-                                console.log('doc inserted and about to close connection');
-                                db.close();
-                                res.writeHead(200, {
-                                    "Content-Type": "text/plain"
-                                });
-                                res.end(JSON.stringify(resJSON));
-                            });
-                        });
-
-
-                    }
-                    else {
-                        console.log('didnt insert anything and about to close connection');
-                        let resJSON = {
-                            original_url: req.params.url,
-                            short_url: baseUrl + docExist.short_url
-                        };
+            let dbOpsArgs = {
+                "query": req.params.url,
+                "mongoUri": config.mongoUri,
+                "dbName": config.dbName
+            };
+            connectToDb(dbOpsArgs, checkUrlExists, (err, docExist, db, dbOpsArgs) => {
+                if (docExist == null) {
+                    findMaxId(err, db, dbOpsArgs, req.params.url, insertNewUrlDoc, (err, result, newDoc) => {
                         db.close();
-                        res.writeHead(200, {
-                            "Content-Type": "text/plain"
-                        });
-                        res.end(JSON.stringify(resJSON));
-                    }
-                });
-
-            }); //end of mongo client connect
-
+                        returnInsertedJson(err, res, config.baseUrl, newDoc);
+                    });
+                }
+                else {
+                    db.close();
+                    returnExistingDocJson(res, req.params.url, config.baseUrl, docExist);
+                }
+            });
         }
         else {
             res.writeHead(400, {
@@ -110,9 +73,6 @@ app.get('/create/:url', (req, res) => {
             });
             res.end("400: Bad request. Please submit a full valid url as the parameter including www domain");
         }
-
-
-
     }
     catch (error) {
         console.log(error);
@@ -124,10 +84,9 @@ app.get('/create/:url', (req, res) => {
     }
 });
 
-
 app.all('/*', (req, res) => {
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Page not found. Please submit shortened url or use /create/<url> to create a shortened url");
 });
 
-app.listen(port);
+app.listen(config.port);
