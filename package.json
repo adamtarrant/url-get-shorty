@@ -23,7 +23,8 @@
   "homepage": "https://github.com/adamtarrant/url-get-shorty#readme",
   "dependencies": {
     "express": "4.16.2",
-    "mongodb": "^3.0.2"
+    "mongodb": "^3.0.2",
+    "newrelic": "^4.0.0"
   },
   "engines": {
     "node": "9.5.0"
